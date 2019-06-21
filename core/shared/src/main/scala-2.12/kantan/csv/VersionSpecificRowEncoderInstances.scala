@@ -15,8 +15,17 @@
  */
 
 package kantan.csv
-package joda.time
 
-object arbitrary
-    extends kantan.csv.laws.discipline.ArbitraryInstances
-    with kantan.codecs.strings.joda.time.laws.discipline.ArbitraryInstances
+trait VersionSpecificRowEncoderInstances {
+
+  /** Provides a [[RowEncoder]] instance for all traversable collections.
+    *
+    * `List`, for example:
+    * {{{
+    * scala> RowEncoder[List[Int]].encode(List(123, 456, 789))
+    * res1: Seq[String] = List(123, 456, 789)
+    * }}}
+    */
+  implicit def traversable[A: CellEncoder, M[X] <: TraversableOnce[X]]: RowEncoder[M[A]] =
+    RowEncoder.from(_.foldLeft(Seq.newBuilder[String])((acc, a) => acc += CellEncoder[A].encode(a)).result())
+}

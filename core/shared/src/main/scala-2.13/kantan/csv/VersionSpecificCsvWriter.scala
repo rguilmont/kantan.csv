@@ -15,20 +15,13 @@
  */
 
 package kantan.csv
-package joda.time
 
-import arbitrary._
-import laws.discipline._
-import org.joda.time.LocalTime
+trait VersionSpecificCsvWriter[A] { self: CsvWriter[A] =>
 
-class LocalTimeCodecTests extends DisciplineSuite {
-
-  checkAll("CellCodec[LocalTime]", CellCodecTests[LocalTime].codec[String, Float])
-
-  checkAll("CellDecoder[LocalTime]", CellDecoderTests[LocalTime].decoder[String, Float])
-  checkAll("CellDecoder[LocalTime]", SerializableTests[CellDecoder[LocalTime]].serializable)
-
-  checkAll("CellEncoder[LocalTime]", CellEncoderTests[LocalTime].encoder[String, Float])
-  checkAll("CellEncoder[LocalTime]", SerializableTests[CellEncoder[LocalTime]].serializable)
+  /** Encodes and writes a collection of `A`s. */
+  def write(as: IterableOnce[A]): CsvWriter[A] = {
+    as.iterator.foreach(write)
+    this
+  }
 
 }

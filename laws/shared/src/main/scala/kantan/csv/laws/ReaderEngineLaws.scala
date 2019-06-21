@@ -21,8 +21,9 @@ import engine.ReaderEngine
 import ops._
 import org.scalacheck.Prop._
 
-trait ReaderEngineLaws extends RfcReaderLaws with SpectrumReaderLaws with KnownFormatsReaderLaws {
-  private def asReader(csv: List[List[Cell]]): kantan.csv.CsvReader[List[Cell]] =
+trait ReaderEngineLaws
+    extends RfcReaderLaws with SpectrumReaderLaws with KnownFormatsReaderLaws with VersionSpecificReaderEngineLaws {
+  protected def asReader(csv: List[List[Cell]]): kantan.csv.CsvReader[List[Cell]] =
     csv.asCsv(rfc).asUnsafeCsvReader[List[Cell]](rfc)
 
   def nextOnEmpty(csv: List[List[Cell]]): Boolean = {
@@ -59,18 +60,6 @@ trait ReaderEngineLaws extends RfcReaderLaws with SpectrumReaderLaws with KnownF
 
   def filter(csv: List[List[Cell]], f: List[Cell] => Boolean): Boolean =
     asReader(csv).filter(f).toList == csv.filter(f)
-
-  def withFilter(csv: List[List[Cell]], f: List[Cell] => Boolean): Boolean =
-    asReader(csv).withFilter(f).toList == asReader(csv).filter(f).toList
-
-  def toStream(csv: List[List[Cell]]): Boolean =
-    asReader(csv).toStream == csv.toStream
-
-  def toTraversable(csv: List[List[Cell]]): Boolean =
-    asReader(csv).toTraversable == csv.toTraversable
-
-  def toIterator(csv: List[List[Cell]]): Boolean =
-    asReader(csv).toIterator.sameElements(csv.toIterator)
 
   def isTraversableAgain(csv: List[List[Cell]]): Boolean =
     !asReader(csv).isTraversableAgain

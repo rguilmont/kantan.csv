@@ -15,18 +15,17 @@
  */
 
 package kantan.csv
-package joda.time
 
-import arbitrary._
-import laws.discipline._
-import org.joda.time.DateTime
+trait VersionSpecificRowEncoderInstances {
 
-class DateTimeCodecTests extends DisciplineSuite {
-  checkAll("CellCodec[DateTime]", CellCodecTests[DateTime].codec[String, Float])
-
-  checkAll("CellDecoder[DateTime]", CellDecoderTests[DateTime].decoder[String, Float])
-  checkAll("CellDecoder[DateTime]", SerializableTests[CellDecoder[DateTime]].serializable)
-
-  checkAll("CellEncoder[DateTime]", CellEncoderTests[DateTime].encoder[String, Float])
-  checkAll("CellEncoder[DateTime]", SerializableTests[CellEncoder[DateTime]].serializable)
+  /** Provides a [[RowEncoder]] instance for all traversable collections.
+    *
+    * `List`, for example:
+    * {{{
+    * scala> RowEncoder[List[Int]].encode(List(123, 456, 789))
+    * res1: Seq[String] = List(123, 456, 789)
+    * }}}
+    */
+  implicit def iterable[A: CellEncoder, M[X] <: IterableOnce[X]]: RowEncoder[M[A]] =
+    RowEncoder.from(_.iterator.foldLeft(Seq.newBuilder[String])((acc, a) => acc += CellEncoder[A].encode(a)).result())
 }

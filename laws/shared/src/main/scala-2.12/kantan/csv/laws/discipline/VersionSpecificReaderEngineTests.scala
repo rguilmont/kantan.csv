@@ -15,20 +15,17 @@
  */
 
 package kantan.csv
-package joda.time
+package laws
+package discipline
 
-import arbitrary._
-import laws.discipline._
-import org.joda.time.LocalDate
+import org.scalacheck.Prop, Prop._
 
-class LocalDateCodecTests extends DisciplineSuite {
-
-  checkAll("CellCodec[LocalDate]", CellCodecTests[LocalDate].codec[String, Float])
-
-  checkAll("CellDecoder[LocalDate]", CellDecoderTests[LocalDate].decoder[String, Float])
-  checkAll("CellDecoder[LocalDate]", SerializableTests[CellDecoder[LocalDate]].serializable)
-
-  checkAll("CellEncoder[LocalDate]", CellEncoderTests[LocalDate].encoder[String, Float])
-  checkAll("CellEncoder[LocalDate]", SerializableTests[CellEncoder[LocalDate]].serializable)
+trait VersionSpecificReaderEngineTests { self: ReaderEngineTests =>
+  def versionSpecificProps: Seq[(String, Prop)] = Seq(
+    "withFilter"    -> forAll(laws.withFilter _),
+    "toStream"      -> forAll(laws.toStream _),
+    "toTraversable" -> forAll(laws.toTraversable _),
+    "toIterator"    -> forAll(laws.toIterator _)
+  )
 
 }

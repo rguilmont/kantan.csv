@@ -18,9 +18,10 @@ package kantan.csv
 package engine
 
 import ops._
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.Matchers
+import org.scalatest.funsuite.AnyFunSuite
 
-class InternalReaderRegressionTests extends FunSuite with Matchers {
+class InternalReaderRegressionTests extends AnyFunSuite with Matchers {
   test("cell with whitespace") {
     "abc, ".unsafeReadCsv[List, List[String]](rfc) should be(List(List("abc", " ")))
     "abc ,def".unsafeReadCsv[List, List[String]](rfc) should be(List(List("abc ", "def")))

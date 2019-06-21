@@ -19,7 +19,7 @@ lazy val jvmModules: Seq[ProjectReference] = Seq(
   enumeratumJVM,
   genericJVM,
   jackson,
-  jodaTime,
+  java8,
   lawsJVM,
   libra,
   refinedJVM,
@@ -37,23 +37,22 @@ lazy val root = Project(id = "kantan-csv", base = file("."))
       |import kantan.csv._
       |import kantan.csv.ops._
       |import kantan.csv.generic._
-      |import kantan.csv.joda.time._
       |import kantan.csv.refined._
     """.stripMargin
   )
   .aggregate((jsModules ++ jvmModules :+ (docs: ProjectReference)): _*)
-  .aggregateIf(java8Supported)(java8)
-  .dependsOn(coreJVM, genericJVM, jodaTime, libra, refinedJVM, enumeratumJVM)
+  .dependsOn(coreJVM, genericJVM, libra, refinedJVM, enumeratumJVM)
 
 lazy val docs = project
   .enablePlugins(DocumentationPlugin)
   .settings(name := "docs")
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-      inAnyProject -- inProjectsIf(!java8Supported)(java8) -- inProjects(benchmark) -- inProjects(jsModules: _*)
+      inAnyProject -- inProjects(benchmark) -- inProjects(jsModules: _*)
   )
   .dependsOn(
     coreJVM,
+    java8,
     lawsJVM,
     libra,
     catsJVM,
@@ -61,22 +60,19 @@ lazy val docs = project
     genericJVM,
     jackson,
     commons,
-    jodaTime,
     refinedJVM,
     enumeratumJVM
   )
-  .dependsOnIf(java8Supported)(java8)
 
 lazy val benchmark = project
   .enablePlugins(UnpublishedPlugin, JmhPlugin)
   .dependsOn(coreJVM, jackson, commons)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.marklister" %% "product-collections" % Versions.productCollection,
-      "com.opencsv"           % "opencsv"              % Versions.opencsv,
-      "com.univocity"         % "univocity-parsers"    % Versions.univocity,
-      "com.github.tototoshi"  %% "scala-csv"           % Versions.scalaCsv,
-      "org.scalatest"         %% "scalatest"           % Versions.scalatest % "test"
+      "com.opencsv"          % "opencsv"           % Versions.opencsv,
+      "com.univocity"        % "univocity-parsers" % Versions.univocity,
+      "com.github.tototoshi" %% "scala-csv"        % Versions.scalaCsv,
+      "org.scalatest"        %% "scalatest"        % Versions.scalatest % "test"
     )
   )
 
@@ -124,8 +120,9 @@ lazy val commons = project
   .dependsOn(coreJVM, lawsJVM % "test")
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-csv" % Versions.commonsCsv,
-      "org.scalatest"      %% "scalatest"  % Versions.scalatest % "test"
+      "org.apache.commons"     % "commons-csv"              % Versions.commonsCsv,
+      "org.scala-lang.modules" %% "scala-collection-compat" % Versions.collectionCompat,
+      "org.scalatest"          %% "scalatest"               % Versions.scalatest % "test"
     )
   )
 
@@ -179,23 +176,6 @@ lazy val cats = kantanCrossProject("cats")
 
 lazy val catsJVM = cats.jvm
 lazy val catsJS  = cats.js
-
-// - joda-time projects ------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-lazy val jodaTime = Project(id = "joda-time", base = file("joda-time"))
-  .settings(
-    moduleName := "kantan.csv-joda-time",
-    name       := "joda-time"
-  )
-  .enablePlugins(PublishedPlugin)
-  .dependsOn(coreJVM, lawsJVM % "test")
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.nrinaudo"  %% "kantan.codecs-joda-time"      % Versions.kantanCodecs,
-      "com.nrinaudo"  %% "kantan.codecs-joda-time-laws" % Versions.kantanCodecs % "test",
-      "org.scalatest" %% "scalatest"                    % Versions.scalatest % "test"
-    )
-  )
 
 // - java8 projects ----------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
